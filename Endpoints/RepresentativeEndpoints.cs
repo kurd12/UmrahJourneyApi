@@ -1,5 +1,4 @@
-﻿// Faili: Endpoints/RepresentativeEndpoints.cs
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using UmrahJourneyApi.Data;
 
 namespace UmrahJourneyApi.Endpoints;
@@ -10,6 +9,7 @@ public static class RepresentativeEndpoints
     {
         var group = app.MapGroup("/api/representatives");
 
+        // GET /api/representatives
         group.MapGet("/", async (ApplicationDbContext db) =>
         {
             var representatives = await db.Representatives.Where(r => r.IsActive).ToListAsync();
