@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// بەکارهێنانی پاکێجە پێویستەکان
+using Microsoft.EntityFrameworkCore;
 using UmrahJourneyApi.Data;
 using UmrahJourneyApi.Endpoints;
+using UmrahJourneyApi.Models; // ئەمە زیادکرا بۆ Trips
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// زیادکردنی خزمەتگوزارییەکان بۆ کۆنتەینەر
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -16,8 +17,6 @@ var user = builder.Configuration["DB_USER"];
 var password = builder.Configuration["DB_PASSWORD"];
 var database = builder.Configuration["DB_DATABASE"];
 
-// ئەگەر گۆڕاوەکان بوونیان هەبوو (واتە لەسەر Railway کاردەکەین)، ئەوا Connection Stringـی Railway بەکاربهێنە
-// ئەگینا، Connection Stringـی ناو appsettings.json (بۆ کۆمپیوتەری خۆمان) بەکاربهێنە
 var connectionString = !string.IsNullOrEmpty(host)
     ? $"Server={host};Port={port};Database={database};User={user};Password={password};"
     : builder.Configuration.GetConnectionString("DefaultConnection");
@@ -25,48 +24,37 @@ var connectionString = !string.IsNullOrEmpty(host)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-
+// دروستکردنی ئەپڵیکەیشن
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// ڕێکخستنی HTTP request pipeline
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+// هەمیشە Swagger چالاک بکە (چارەسەری هەڵەی 404)
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    // ئەمە وا دەکات کە کاتێک دەچیتە سەر لینکی سەرەکی، یەکسەر بچێتە سەر Swagger
+    options.RoutePrefix = string.Empty;
+});
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+// app.UseHttpsRedirection(); // ئەمە لەسەر Railway پێویست نییە و لەوانەیە کێشە دروست بکات
+
+//============ پێناسەکردنی API Endpoints ============
+
+// GET: /api/trips (بۆ هێنانی هەموو گەشتە بەردەستەکان)
 app.MapGet("/api/trips", async (ApplicationDbContext db) =>
 {
     var trips = await db.Trips.Where(t => t.IsAvailable).ToListAsync();
     return Results.Ok(trips);
 });
-app.MapBookingEndpoints();
-// زیادکردنی هەموو Endpointـەکانی Representative
-app.MapRepresentativeEndpoints(); // <-- ئەمە زیادکرا
-app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// زیادکردنی هەموو Endpointـەکانی Booking لە فایلی جیاوازەوە
+app.MapBookingEndpoints();
+
+// زیادکردنی هەموو Endpointـەکانی Representative لە فایلی جیاوازەوە
+app.MapRepresentativeEndpoints();
+
+//====================================================
+
+// کارپێکردنی ئەپڵیکەیشن
+app.Run();
