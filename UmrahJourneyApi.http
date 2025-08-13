@@ -1,0 +1,6 @@
+@UmrahJourneyApi_HostAddress = http://localhost:5156
+
+GET {{UmrahJourneyApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
