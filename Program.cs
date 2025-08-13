@@ -21,8 +21,20 @@ var connectionString = !string.IsNullOrEmpty(host)
     ? $"Server={host};Port={port};Database={database};User={user};Password={password};"
     : builder.Configuration.GetConnectionString("DefaultConnection");
 
+// دروستکردنی وەشانی سێرڤەر بە شێوەیەکی دەستی
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 29)); // وەشانی باوی MySQL
+
+// زیادکردنی DbContext لەگەڵ ڕێکخستنی تایبەت بۆ Railway
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, serverVersion, mySqlOptions =>
+    {
+        // ئەمە زۆربەی کێشەکانی SSL لەگەڵ Railway چارەسەر دەکات
+        mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+    })
+);
 
 // دروستکردنی ئەپڵیکەیشن
 var app = builder.Build();
