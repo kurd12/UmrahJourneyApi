@@ -20,15 +20,18 @@ public static class BookingEndpoints
     // فەنکشنی نوێکراوە بۆ وەرگرتنی فۆڕم و فایل
     private static async Task<IResult> CreateBooking(HttpContext context, ApplicationDbContext db)
     {
-        // وەرگرتنی داتا لە فۆڕمەکە
         var form = await context.Request.ReadFormAsync();
-        var tripId = int.Parse(form["TripId"]);
-        var passengerFullName = form["PassengerFullName"];
-        var passportNumber = form["PassportNumber"];
-        var userFullName = form["UserFullName"];
-        var userPhoneNumber = form["UserPhoneNumber"];
 
-        // وەرگرتنی فایلەکان (وێنەکان)
+        // =================== گرنگترین گۆڕانکاری لێرەیە ===================
+        // گۆڕینی StringValues بۆ جۆری داتای دروست (int و string)
+        var tripId = int.Parse(form["TripId"]);
+        var passengerFullName = (string)form["PassengerFullName"];
+        var passportNumber = (string)form["PassportNumber"];
+        var userFullName = (string)form["UserFullName"];
+        var userPhoneNumber = (string)form["UserPhoneNumber"];
+        // ===============================================================
+
+        // وەرگرتنی فایلەکان (ئەمە وەک خۆی دەمێنێتەوە)
         var passportPhoto = form.Files.GetFile("passportPhoto");
         var personalPhoto = form.Files.GetFile("personalPhoto");
 
