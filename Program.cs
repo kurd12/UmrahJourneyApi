@@ -3,11 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using UmrahJourneyApi.Data;
 using UmrahJourneyApi.Endpoints;
-using UmrahJourneyApi.Models; // ئەمە زیادکرا بۆ Trips
 
 var builder = WebApplication.CreateBuilder(args);
 
-// زیادکردنی خزمەتگوزارییەکان بۆ کۆنتەینەر
+// =================== زیادکردنی خزمەتگوزارییەکان (Services) ===================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -23,66 +22,60 @@ var connectionString = !string.IsNullOrEmpty(host)
     : builder.Configuration.GetConnectionString("DefaultConnection");
 
 // دروستکردنی وەشانی سێرڤەر بە شێوەیەکی دەستی
-var serverVersion = new MySqlServerVersion(new Version(8, 0, 29)); // وەشانی باوی MySQL
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 29));
 
 // زیادکردنی DbContext لەگەڵ ڕێکخستنی تایبەت بۆ Railway
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, serverVersion, mySqlOptions =>
     {
-        // ئەمە زۆربەی کێشەکانی SSL لەگەڵ Railway چارەسەر دەکات
         mySqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null);
     })
 );
+// ==========================================================================
 
-// دروستکردنی ئەپڵیکەیشن
+
 var app = builder.Build();
+
+
+// =================== ڕێکخستنی HTTP Request Pipeline ===================
+
+// بەشی یەکەم: جێبەجێکردنی Migrationـەکان لە کاتی کارپێکردندا
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.Migrate();
 }
-// ڕێکخستنی HTTP request pipeline
 
-// هەمیشە Swagger چالاک بکە (چارەسەری هەڵەی 404)
+// بەشی دووەم: ڕێکخستنی Swagger
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "UmrahJourneyApi v1");
-
-    // ئەمە وا دەکات کە کاتێک دەچیتە سەر لینکی سەرەکی، یەکسەر بچێتە سەر Swagger
     options.RoutePrefix = string.Empty;
 });
 
-// app.UseHttpsRedirection(); // ئەمە لەسەر Railway پێویست نییە و لەوانەیە کێشە دروست بکات
-
-//============ پێناسەکردنی API Endpoints ============
-
-//============ پێناسەکردنی API Endpoints ============
-app.MapTripEndpoints(); // ئەمە زیاد دەکەین
-app.MapBookingEndpoints();
-app.MapRepresentativeEndpoints();
-//====================================================
-
-// زیادکردنی هەموو Endpointـەکانی Booking لە فایلی جیاوازەوە
-app.MapBookingEndpoints();
-
-// زیادکردنی هەموو Endpointـەکانی Representative لە فایلی جیاوازەوە
-app.MapRepresentativeEndpoints();
-
-//====================================================
-
-// ڕێگەدان بە پیشاندانی فایلە ستاتیکییەکانی ناو فۆڵدەری Uploads
+// بەشی سێیەم: دروستکردنی فۆڵدەری Uploads و ڕێگەدان بە بەکارهێنانی
+var uploadsFolderPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");
+if (!Directory.Exists(uploadsFolderPath))
+{
+    Directory.CreateDirectory(uploadsFolderPath);
+}
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+    FileProvider = new PhysicalFileProvider(uploadsFolderPath),
     RequestPath = "/Uploads"
 });
 
-app.Run();
+// بەشی چوارەم: پێناسەکردنی هەموو API Endpoints
+app.MapTripEndpoints();
+app.MapBookingEndpoints();
+app.MapRepresentativeEndpoints();
 
-// کارپێکردنی ئەپڵیکەیشن
+// ==========================================================================
+
+
+// کارپێکردنی ئەپڵیکەیشن (تەنها یەک جار)
 app.Run();
