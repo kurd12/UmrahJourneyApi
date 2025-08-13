@@ -73,8 +73,8 @@ app.UseStaticFiles(new StaticFileOptions
 app.MapTripEndpoints();
 app.MapBookingEndpoints();
 app.MapRepresentativeEndpoints();
-app.MapAuthEndpoints(); 
-
+app.MapAuthEndpoints();
+app.MapUserEndpoints();
 // ==========================================================================
 
 
