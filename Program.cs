@@ -1,5 +1,6 @@
 ﻿// بەکارهێنانی پاکێجە پێویستەکان
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using UmrahJourneyApi.Data;
 using UmrahJourneyApi.Endpoints;
 using UmrahJourneyApi.Models; // ئەمە زیادکرا بۆ Trips
@@ -73,6 +74,16 @@ app.MapBookingEndpoints();
 app.MapRepresentativeEndpoints();
 
 //====================================================
+
+// ڕێگەدان بە پیشاندانی فایلە ستاتیکییەکانی ناو فۆڵدەری Uploads
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+    RequestPath = "/Uploads"
+});
+
+app.Run();
 
 // کارپێکردنی ئەپڵیکەیشن
 app.Run();
