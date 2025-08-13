@@ -9,12 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// دروستکردنی Connection String بە شێوەیەکی دینامیکی
+var host = builder.Configuration["DB_HOST"];
+var port = builder.Configuration["DB_PORT"];
+var user = builder.Configuration["DB_USER"];
+var password = builder.Configuration["DB_PASSWORD"];
+var database = builder.Configuration["DB_DATABASE"];
 
-// 2. زیادکردنی DbContext و بەستنەوەی بە MySQL
+// ئەگەر گۆڕاوەکان بوونیان هەبوو (واتە لەسەر Railway کاردەکەین)، ئەوا Connection Stringـی Railway بەکاربهێنە
+// ئەگینا، Connection Stringـی ناو appsettings.json (بۆ کۆمپیوتەری خۆمان) بەکاربهێنە
+var connectionString = !string.IsNullOrEmpty(host)
+    ? $"Server={host};Port={port};Database={database};User={user};Password={password};"
+    : builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-
 
 
 var app = builder.Build();
