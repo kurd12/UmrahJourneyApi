@@ -33,6 +33,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "UmrahJourneyApi v1");
+
     // ئەمە وا دەکات کە کاتێک دەچیتە سەر لینکی سەرەکی، یەکسەر بچێتە سەر Swagger
     options.RoutePrefix = string.Empty;
 });
