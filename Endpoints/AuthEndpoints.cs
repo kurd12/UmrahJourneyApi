@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using UmrahJourneyApi.Data;
 using UmrahJourneyApi.Models;
+using BCrypt.Net; 
 
 namespace UmrahJourneyApi.Endpoints;
 
@@ -17,7 +18,7 @@ public static class AuthEndpoints
         var group = app.MapGroup("/api/auth");
 
         // Endpointی تۆمارکردن
-        group.MapPost("/register", async (RegisterRequest request, ApplicationDbContext db) =>
+        _ = group.MapPost("/register", async (RegisterRequest request, ApplicationDbContext db) =>
         {
             // پشکنینی ئەوەی ئایا ژمارە مۆبایلەکە پێشتر تۆمارکراوە
             var existingUser = await db.Users.FirstOrDefaultAsync(u => u.PhoneNumber == request.PhoneNumber);
