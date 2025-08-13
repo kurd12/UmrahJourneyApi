@@ -11,4 +11,10 @@ RUN dotnet publish "UmrahJourneyApi.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/publish .
+
+# ناساندنی پۆرت و ژینگەی کارکردن (پێش ENTRYPOINT)
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+# دوا فەرمان: کارپێکردنی ئەپڵیکەیشن
 ENTRYPOINT ["dotnet", "UmrahJourneyApi.dll"]
