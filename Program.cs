@@ -60,12 +60,11 @@ app.UseSwaggerUI(options =>
 
 //============ پێناسەکردنی API Endpoints ============
 
-// GET: /api/trips (بۆ هێنانی هەموو گەشتە بەردەستەکان)
-app.MapGet("/api/trips", async (ApplicationDbContext db) =>
-{
-    var trips = await db.Trips.Where(t => t.IsAvailable).ToListAsync();
-    return Results.Ok(trips);
-});
+//============ پێناسەکردنی API Endpoints ============
+app.MapTripEndpoints(); // ئەمە زیاد دەکەین
+app.MapBookingEndpoints();
+app.MapRepresentativeEndpoints();
+//====================================================
 
 // زیادکردنی هەموو Endpointـەکانی Booking لە فایلی جیاوازەوە
 app.MapBookingEndpoints();
